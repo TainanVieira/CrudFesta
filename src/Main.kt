@@ -18,8 +18,8 @@ private fun menu() {
         println("2- Listar ")
         println("3- Editar ")
         println("4- Excluir ")
-        println("5- Sair ")
-        println("6- Buscar")
+        println("5- buscar ")
+        println("0- sair")
 
         val opcao = readln()// Validar
 
@@ -60,12 +60,26 @@ private fun menu() {
 
 private fun cadastrar() {
 
+    val  validarNome = Regex("^[A-Za-zÀ-ÖØ-öø-ÿ\\s]+\$")
     //instancia
     var convidado = Convidado()
+    var nomeVal: Boolean
 
-    println("Qual o seu nome ? ")
-    //val nome =readln()
-    convidado.nome = readln()//QUESTÃO 1
+    do {
+
+        println("Qual o seu nome ? ")
+         val nome = readln()//QUESTÃO 1
+
+        if (validarNome.matches(nome)){
+            convidado.nome = nome
+            nomeVal = true
+        }else{
+            println("O nome esta invalido favor repetir com apenas letras e espaços ")
+            nomeVal = false
+        }
+    }while (!nomeVal)
+
+
 
     println("Qual vai ser o presente")
     convidado.presete = readln()
@@ -108,34 +122,43 @@ private fun editar(): Boolean {
 
     if (validar()) {
         listar()
-        println("Digite a posição a ser editada ")
-        val posicao = readln().toInt()
+        val valiPresenca = Regex("^[SN]$") // garante que seja apenas S ou N
 
-        println("O convidado vai ? s/n")
-        val resposta = readln()
+      val  posicao = validarNumeroInt("Digite a  posição que deseja  editar ",
+          0, listaconvidados.size -1)
 
-        when (resposta) {
-            "S" -> listaconvidados[posicao].presenca = true
-            "n" -> listaconvidados[posicao].presenca = false
-        }
+        var resposta: String
+
+        do {
+
+            println("O convidado vai ? s/n")
+            resposta = readln().uppercase()// converte para maiusculo
+            if (!valiPresenca.matches(resposta)) {
+                println("Erro digite apenas S para sim ou N para não ")
+            }
+        } while (!valiPresenca.matches(resposta))
+
+        listaconvidados[posicao].presenca = (resposta == "S")
+
+        println("Convidado atulizado com sucesso ")
+
+
+
     }
-
-    return true
+    return  true
 }
 
 private fun excluir(): Boolean {
 
+
     if (validar()) {
         listar()
 
-        println("Qual posição vc deseja remover ")
-        val posicao = readln().toInt()
+        val posicao = validarNumeroInt(mensagem = "Digite a posição que deseja remover ",
+            0, listaconvidados.size -1)
+
 
         listaconvidados.removeAt(posicao)
-        /*convidado.nome = ""
-        convidado.alimetar = ""
-        convidado.presete = ""
-        convidado. presenca = false */
 
         println("Convidado excluido")
     }
@@ -143,17 +166,42 @@ private fun excluir(): Boolean {
 }
 
 private fun buscar() {
-    var i = 0
+
+
     if (validar()) {
+
+        val validarNome = Regex("^[A-Za-zÀ-ÖØ-öø-ÿ\\s]+\$") // Permite apenas letras e espaços
+        var busca: String
+
+        do {
+
+
         print("Digite o nome da pessoa que voce busca")
-        val busca = readln()
-        listaconvidados.forEach { convidado ->
-            // O contains busca uma string dentro de uma outra string
-            if (convidado.nome.contains(busca)) {
-                println(" Posição: $i, Nome: ${convidado.nome}")
+         busca = readln().trim()
+
+            if (!validarNome.matches(busca)){
+            println("Erro digite apenas letras")
             }
-            i++
+            else{
+                break // sai do loop
+            }
+        }while (true)
+
+        busca.lowercase()// converte para minusculas
+
+        var encontrado = false
+        listaconvidados.forEachIndexed { i, convidado ->
+            if (convidado.nome.lowercase().contains(busca)) {
+                println("Posição: $i, Nome: ${convidado.nome}")
+                encontrado = true
+            }
         }
+
+        if (!encontrado) {
+            println("Nenhum convidado encontrado com esse nome.")
+        }
+
+
     }
 
 }
@@ -165,3 +213,27 @@ private fun validar(): Boolean {
     }
     return true
 }
+
+private fun  validarNumeroInt(mensagem: String, min:Int, max: Int):Int{
+    val regexNumero = Regex("^\\d+\$") // Aceita apenas números inteiros
+    var numero: Int?
+
+    do {
+        println(mensagem)
+        val input = readln()
+
+        if (regexNumero.matches(input)) {
+            numero = input.toInt()
+            if (numero in min..max) {
+                return numero // Retorna o valor válido
+            } else {
+                println("Erro: Digite um número entre $min e $max.")
+            }
+        } else {
+            println("Erro: Digite apenas números!")
+        }
+
+    } while (true)
+}
+
+
